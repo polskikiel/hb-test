@@ -2,7 +2,7 @@ package helm_test
 
 import (
 	"context"
-	"github.com/kyma-project/hb-test/internal/helm"
+	"github.com/polskikiel/hb-test/internal/helm"
 	"testing"
 
 	"github.com/sirupsen/logrus"

@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    app: {{ template "name" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+  annotations:
+    sidecar.istio.io/inject: "false"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "fullname" . }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+{{ toYaml .Values.deploy.annotations | indent 8 }}
+      labels:
+        app: {{ template "fullname" . }}
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        release: "{{ .Release.Name }}"
+        heritage: "{{ .Release.Service }}"
+    spec:
+      serviceAccountName: {{ template "fullname" . }}
+      containers:
+      - name: app
+        image: "polskikiel/hb-test:0.0.1"
+        imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+        env:
+          - name: APP_PORT
+            value: "{{ .Values.broker.internalPort }}"
+          - name: APP_STATUS_PORT
+            value: "{{ .Values.broker.statusPort }}"
+          - name: APP_METRICS_PORT
+            value: "{{ .Values.broker.metricsPort }}"
+          - name: APP_CONFIG_FILE_NAME
+            value: /etc/config/helm-broker/config.yaml
+        resources:
+{{ toYaml .Values.broker.resources | indent 10 }}
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp-empty-dir
+        ports:
+        - containerPort: {{ .Values.broker.internalPort }}
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: {{ .Values.broker.statusPort }}
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /live
+            port: {{ .Values.broker.statusPort }}
+          initialDelaySeconds: 10
+          periodSeconds: 15
+          timeoutSeconds: 2
+
+      volumes:
+      - name: tmp-empty-dir
+        emptyDir:
+          sizeLimit: "{{ .Values.ctrl.tmpDirSizeLimit }}"

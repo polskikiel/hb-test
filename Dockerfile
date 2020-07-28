@@ -5,7 +5,7 @@ FROM scratch
 
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY ./helm-broker /root/helm-broker
-COPY testing/ /root/
+COPY ./testing/ /root/testing/
 
 LABEL source=git@github.com:kyma-project/helm-broker.git
 
