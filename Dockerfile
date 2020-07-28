@@ -1,12 +1,7 @@
-FROM alpine:latest as certs
+FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 
-FROM scratch
+COPY ./helm-broker /helm-broker
+COPY ./testing/ /testing/
 
-COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY ./helm-broker /root/helm-broker
-COPY ./testing/ /root/testing/
-
-LABEL source=git@github.com:kyma-project/helm-broker.git
-
-ENTRYPOINT ["/root/helm-broker"]
+CMD ["/helm-broker"]
