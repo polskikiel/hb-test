@@ -1,0 +1,12 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "tag": {
+            "type": "string",
+            "title": "Image tag",
+            "description": "Image tag."
+        }
+    },
+    "required": ["tag"]
+}

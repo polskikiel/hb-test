@@ -1,7 +1,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: {{ template "fullname" . }}
+  name: helm-test
   annotations:
 {{ toYaml .Values.service.annotations | indent 4 }}
   labels:

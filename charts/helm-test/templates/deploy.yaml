@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    app: {{ template "name" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+  annotations:
+    sidecar.istio.io/inject: "false"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "fullname" . }}
+  template:
+    metadata:
+      annotations:
+{{ toYaml .Values.deploy.annotations | indent 8 }}
+      labels:
+        app: {{ template "fullname" . }}
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        release: "{{ .Release.Name }}"
+        heritage: "{{ .Release.Service }}"
+    spec:
+      serviceAccountName: {{ template "fullname" . }}
+      containers:
+      - name: app
+        image: "polskikiel/hb-test:last"
+        imagePullPolicy: Always
+        env:
+          - name: PORT
+            value: "{{ .Values.broker.internalPort }}"
+          - name: NAME
+            value: "helm-test"
+          - name: NAMESPACE
+            value: "{{ .Release.Namespace }}"
+        resources:
+{{ toYaml .Values.broker.resources | indent 10 }}
+        ports:
+        - containerPort: {{ .Values.broker.internalPort }}

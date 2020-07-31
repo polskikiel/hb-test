@@ -20,8 +20,7 @@ func TestInstallListDelete(t *testing.T) {
 	restConfig, err := environment.Start()
 	require.NoError(t, err)
 
-	svc, err := helm.NewClient(restConfig, "secrets", logrus.New())
-	require.NoError(t, err)
+	svc := helm.NewClient(restConfig, "secrets", logrus.New())
 
 	chrt, err := loader.LoadDir("example/testing")
 	require.NoError(t, err)

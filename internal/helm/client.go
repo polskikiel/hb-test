@@ -1,7 +1,6 @@
 package helm
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -22,36 +21,29 @@ type Client struct {
 	installingTimeout time.Duration
 }
 
-func NewClient(restConfig *rest.Config, helmDriver string, log logrus.FieldLogger) (*Client, error) {
-	if helmDriver == "" {
-		helmDriver = "secrets"
-	}
+func NewClient(restConfig *rest.Config, helmDriver string, log logrus.FieldLogger) *Client {
 	return &Client{
 		log:               log,
 		helmDriver:        helmDriver,
 		restConfig:        restConfig,
 		installingTimeout: time.Hour,
-	}, nil
+	}
 }
 
 func (c *Client) Install(chrt *chart.Chart, values map[string]interface{}, releaseName string, namespace string) (*release.Release, error) {
 	c.log.Infof("Installing chart with release name [%s], namespace: [%s]", releaseName, namespace)
 
-	ns := string(namespace)
-	cfg, err := c.getConfig(ns)
+	cfg, err := c.getConfig(namespace)
 	if err != nil {
 		return nil, errors.Wrap(err, "while getting config")
 	}
 
 	installAction := action.NewInstall(cfg)
-	installAction.ReleaseName = string(releaseName)
-	installAction.Namespace = ns
-	installAction.Wait = true
+	installAction.ReleaseName = releaseName
+	installAction.Namespace = namespace
+	installAction.Wait = false
 	installAction.Timeout = c.installingTimeout
 	installAction.CreateNamespace = true // https://v3.helm.sh/docs/faq/#automatically-creating-namespaces
-
-	fmt.Println("CHART:", chrt)
-	fmt.Println("VALUES:", values)
 
 	release, err := installAction.Run(chrt, values)
 	if err != nil {
@@ -64,13 +56,14 @@ func (c *Client) Install(chrt *chart.Chart, values map[string]interface{}, relea
 // Delete is deleting release of the chart
 func (c *Client) Delete(releaseName string, namespace string) error {
 	c.log.Infof("Deleting chart with release name [%s], namespace: [%s]", releaseName, namespace)
-	cfg, err := c.getConfig(string(namespace))
+	cfg, err := c.getConfig(namespace)
 	if err != nil {
 		return errors.Wrap(err, "while getting config")
 	}
 
 	uninstallAction := action.NewUninstall(cfg)
-	_, err = uninstallAction.Run(string(releaseName))
+	uninstallAction.KeepHistory = false
+	_, err = uninstallAction.Run(releaseName)
 	if err != nil {
 		return errors.Wrap(err, "while executing uninstall action")
 	}
@@ -80,7 +73,7 @@ func (c *Client) Delete(releaseName string, namespace string) error {
 
 // ListReleases returns a list of helm releases in the given namespace
 func (c *Client) ListReleases(namespace string) ([]*release.Release, error) {
-	cfg, err := c.getConfig(string(namespace))
+	cfg, err := c.getConfig(namespace)
 	if err != nil {
 		return nil, errors.Wrap(err, "while getting config")
 	}
@@ -99,14 +92,11 @@ func (c *Client) getConfig(namespace string) (*action.Configuration, error) {
 }
 
 func (c *Client) newConfigFlags(namespace string) *genericclioptions.ConfigFlags {
-	dir := ""
-	cacheDir := &dir
 	return &genericclioptions.ConfigFlags{
 		Namespace:   &namespace,
 		APIServer:   &c.restConfig.Host,
 		CAFile:      &c.restConfig.CAFile,
 		BearerToken: &c.restConfig.BearerToken,
-		CacheDir:    cacheDir,
 	}
 }
 

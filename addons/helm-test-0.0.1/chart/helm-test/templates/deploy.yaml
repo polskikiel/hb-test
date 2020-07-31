@@ -8,7 +8,7 @@ metadata:
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
   annotations:
-    sidecar.istio.io/inject: "false"
+{{ toYaml .Values.deploy.annotations | indent 4 }}
 spec:
   replicas: 1
   selector:
@@ -27,13 +27,15 @@ spec:
       serviceAccountName: {{ template "fullname" . }}
       containers:
       - name: app
-        image: "polskikiel/hb-test:0.0.1"
+        image: "polskikiel/hb-test:{{ .Values.tag }}"
         imagePullPolicy: Always
         env:
           - name: PORT
             value: "{{ .Values.broker.internalPort }}"
           - name: NAME
-            value: "test1"
+            value: "{{ randAlphaNum 8 }}"
+          - name: NAMESPACE
+            value: "{{ .Release.Namespace }}"
         resources:
 {{ toYaml .Values.broker.resources | indent 10 }}
         ports:

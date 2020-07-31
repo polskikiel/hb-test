@@ -1,0 +1,13 @@
+name: helm-test
+version: 0.0.1
+id: faebbe18-0a84-11e9-ab14-d663bd873d94
+description: "A simple addon which installs helm releases."
+displayName: "Helm test"
+
+tags: test
+labels:
+  showcase: "true"
+providerDisplayName: SAP
+longDescription: "A simple addon which installs helm releases."
+bindable: false
+planUpdatable: true

@@ -1,0 +1,23 @@
+service:
+  type: NodePort
+  externalPort: 80
+  annotations: {}
+
+deploy:
+  annotations: {
+    sidecar.istio.io/inject: "false"
+  }
+
+tag: last
+
+broker:
+  resources:
+    limits:
+      memory: 180Mi
+      cpu: 60m
+    requests:
+      memory: 64Mi
+      cpu: 30m
+  internalPort: 8070
+  statusPort: 8071
+  metricsPort: 8072

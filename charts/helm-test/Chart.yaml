@@ -1,4 +1,4 @@
-name: helm-broker
+name: helm-test
 apiVersion: v1
 description: Helm broker deployment chart.
 version: 0.1.0
