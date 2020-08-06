@@ -9,6 +9,7 @@ import (
 	"k8s.io/client-go/rest"
 	"net/http"
 	_ "net/http/pprof"
+	"strings"
 	"time"
 )
 
@@ -37,24 +38,19 @@ func main() {
 	}()
 	log.Info("Starting provisioning")
 
+
 	for i := 0; i < 4000; i++ {
-		n := fmt.Sprintf("%s-%d", cfg.Name, i)
-		//out, err := exec.Command("helm", "install", n, "/testing", "-n", cfg.Namespace).Output()
-		//fatalOnError(err)
-		//log.Info(out)
+		n := strings.ToLower(fmt.Sprintf("%s-%d", cfg.Name, i))
 
 		_, err = helm.NewClient(clusterCfg, "secrets", log).Install(ch, map[string]interface{}{}, n, cfg.Namespace)
 		fatalOnError(err)
-		//out, err = exec.Command("helm", "delete", n, "-n", cfg.Namespace).Output()
-		//fatalOnError(err)
-		//log.Info(out)
 
 		err = helm.NewClient(clusterCfg, "secrets", log).Delete(n, cfg.Namespace)
 		fatalOnError(err)
 	}
 
 	log.Info("OK")
-	time.Sleep(time.Hour*3)
+	time.Sleep(time.Hour)
 }
 
 func fatalOnError(err error) {

@@ -38,6 +38,7 @@ func (c *Client) Install(chrt *chart.Chart, values map[string]interface{}, relea
 		return nil, errors.Wrap(err, "while getting config")
 	}
 
+	cfg.Releases.MaxHistory = 1
 	installAction := action.NewInstall(cfg)
 	installAction.ReleaseName = releaseName
 	installAction.Namespace = namespace
